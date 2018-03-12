@@ -1,46 +1,52 @@
 var dataBase = firebase.database();
+// var buttons = $('.buttons')[0].outerHTML;
 
-var buttons = $('.buttons')[0].outerHTML;
-
-
-
-console.log(buttons)
 function trainChanges() {
     dataBase.ref('trains').on('value', function (snapShot) {
+        sync()
         getKeys(snapShot.val());
-        console.log(snapShot.val());
+         
     })
 }
 
+
 function getKeys(object) {
     var keysArray = (Object.keys(object));
-    var string = '';
+    $('tbody').empty();
     for (let i = 0; i < keysArray.length; i++) {
         var key = keysArray[i]
-        string+=`<tr data-id=${key}>` 
+        var string = `<tr data-id=${key}>`;
         for (var property in object[key]) {
-            string+=`<td data-name=${property}>${object[key][property]}</td>`;
+            if (property === 'firstTrainTime') {
+                var timeString = object[key][property];
+                object[key][property] = moment(timeString).format('hh:mm a');
+            }
+            string += `<td data-name=${property}>${object[key][property]}</td>`;
         }
-        string+=buttons;
-        string+='</tr>'
+        // string += buttons;
+        string += '</tr>'
+        var freq = $(string).find('td[data-name=frequency]')[0].outerHTML;
+        var timeCol = $(string).find('td[data-name=firstTrainTime]')[0].outerHTML;
+        $('tbody').append(string);
+        $(`tr[data-id=${key}]`).prepend($(`tr[data-id=${key}]`).find('td[data-name=train]'))
+        $(`tr[data-id=${key}]`).find('td').eq(3).replaceWith(timeCol);
+        $(`tr[data-id=${key}]`).find('td').eq(2).replaceWith(freq);
+
     }
- 
-    $('tbody').html(string);
-        
+
+
 }
 
-function minutesAway(){
-   console.log( $('td'))
+function minutesAway() {
+    console.log($('td[data-name=firstTrainTime]'))
     console.log(moment().format("hh:mm:ss a"));
 
-} 
+}
 
-minutesAway();
-
-
-function postTrainInfo() {
+function postTrainInfo(event) {
     event.preventDefault();
     var data = {};
+    var timeNow = moment();
     var inputArray = ($(this).parent().find('input'));
     for (let i = 0; i < inputArray.length; i++) {
         // console.log(inputArray[i].value);      
@@ -48,15 +54,32 @@ function postTrainInfo() {
         var val = inputArray[i].value;
         data[key] = val;
     }
-    //  console.log(data);
+    var hhmm = convertString(data.firstTrainTime);
+    data.firstTrainTime = moment(hhmm).format();
+    data.minutesAway = moment(data.firstTrainTime).diff(timeNow, 'minutes');
     dataBase.ref('trains').push().set(data);
     inputArray.val('');
+
 }
+
+
+
+
+function convertString(string) {
+    var timeArray = string.split(':')
+    for (var i = 0; i < timeArray.length; i++)
+        timeArray[i] = parseInt(timeArray[i]);
+    return {
+        hours: timeArray[0],
+        minutes: timeArray[1]
+    }
+
+}
+
 
 
 function removeTrain() {
     $(this).parent().parent().remove();
-
 }
 
 function updateTrain() {
@@ -69,23 +92,14 @@ function updateTrain() {
     }
 }
 
- function saveTrain(){
-     
- }
+function sync(){
+var currentTime = moment();
 
+
+
+}
+
+trainChanges();
 
 
 $('#submitBtn').on('click', postTrainInfo);
-
-$('tbody').on('click', '.remove', removeTrain)
-
-$('tbody').on('click', '.update', updateTrain)
-
-$('tbody').on('click', '.save', saveTrain)
-
-
-// dataBase.ref('trains').push().set({
-//     name:'1234'
-// });
-
-trainChanges();
