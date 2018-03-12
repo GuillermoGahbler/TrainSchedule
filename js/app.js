@@ -1,5 +1,10 @@
 var dataBase = firebase.database();
 
+var buttons = $('.buttons')[0].outerHTML;
+
+
+
+console.log(buttons)
 function trainChanges() {
     dataBase.ref('trains').on('value', function (snapShot) {
         getKeys(snapShot.val());
@@ -12,20 +17,25 @@ function getKeys(object) {
     var string = '';
     for (let i = 0; i < keysArray.length; i++) {
         var key = keysArray[i]
-        string+='<tr>'
+        string+=`<tr data-id=${key}>` 
         for (var property in object[key]) {
-            string+='<td>' + object[key][property] + '</td>';
+            string+=`<td data-name=${property}>${object[key][property]}</td>`;
         }
+        string+=buttons;
         string+='</tr>'
     }
-
-    console.log(string);
+ 
+    $('tbody').html(string);
+        
 }
 
-function htmlString (){
+function minutesAway(){
+   console.log( $('td'))
+    console.log(moment().format("hh:mm:ss a"));
 
-}
+} 
 
+minutesAway();
 
 
 function postTrainInfo() {
@@ -59,9 +69,10 @@ function updateTrain() {
     }
 }
 
-function saveTrain() {
+ function saveTrain(){
+     
+ }
 
-}
 
 
 $('#submitBtn').on('click', postTrainInfo);
