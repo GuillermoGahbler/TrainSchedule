@@ -37,6 +37,13 @@ function getKeys(object) {
 
 }
 
+function insideKeys (){
+
+    
+}
+
+
+
 function minutesAway() {
     console.log($('td[data-name=firstTrainTime]'))
     console.log(moment().format("hh:mm:ss a"));
@@ -54,6 +61,13 @@ function postTrainInfo(event) {
         var val = inputArray[i].value;
         data[key] = val;
     }
+
+    convert();
+ 
+}
+
+
+function convert (){
     var hhmm = convertString(data.firstTrainTime);
     data.firstTrainTime = moment(hhmm).format();
     data.minutesAway = moment(data.firstTrainTime).diff(timeNow, 'minutes');
@@ -61,7 +75,7 @@ function postTrainInfo(event) {
     inputArray.val('');
 
 }
-
+ 
 
 
 
@@ -92,13 +106,24 @@ function updateTrain() {
     }
 }
 
-function sync(){
-var currentTime = moment();
-
-
-
-}
-
+function sync(object) {
+    let timeNow=moment();
+    /**
+     var trains=object.keys(object);
+     for(let i =0; trains.length; i++){
+     while(flag){
+     let someTime=object[trains[i]].firstTrainTime;
+     if(moment(someTime).diff(timeNow,'seconds') <0){
+       let freq=parseInt(object[key].frequency);
+       object[key].firstTrainTime=moment(someTime).add(freq,'minutes').format();
+     } else{
+       flag=false;
+     }
+     db.ref('trains/${key[i]}').update(someTime:someTime)
+    }
+  }
+    **/
+  }
 trainChanges();
 
 
