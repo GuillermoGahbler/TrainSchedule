@@ -3,9 +3,7 @@ var dataBase = firebase.database();
 
 function trainChanges() {
     dataBase.ref('trains').on('value', function (snapShot) {
-        sync()
-        getKeys(snapShot.val());
-         
+        sync(snapShot.val())
     })
 }
 
@@ -37,23 +35,10 @@ function getKeys(object) {
 
 }
 
-function insideKeys (){
-
-    
-}
-
-
-
-function minutesAway() {
-    console.log($('td[data-name=firstTrainTime]'))
-    console.log(moment().format("hh:mm:ss a"));
-
-}
-
+ 
 function postTrainInfo(event) {
     event.preventDefault();
     var data = {};
-    var timeNow = moment();
     var inputArray = ($(this).parent().find('input'));
     for (let i = 0; i < inputArray.length; i++) {
         // console.log(inputArray[i].value);      
@@ -62,68 +47,50 @@ function postTrainInfo(event) {
         data[key] = val;
     }
 
-    convert();
- 
+    convert(data);
+    inputArray.val('');
 }
 
 
-function convert (){
+function convert(data) {
     var hhmm = convertString(data.firstTrainTime);
+    var timeNow = moment();
     data.firstTrainTime = moment(hhmm).format();
     data.minutesAway = moment(data.firstTrainTime).diff(timeNow, 'minutes');
+    console.log(data);
     dataBase.ref('trains').push().set(data);
-    inputArray.val('');
+
 
 }
- 
-
-
 
 function convertString(string) {
     var timeArray = string.split(':')
-    for (var i = 0; i < timeArray.length; i++)
+    for (var i = 0; i < timeArray.length; i++){
         timeArray[i] = parseInt(timeArray[i]);
-    return {
-        hours: timeArray[0],
-        minutes: timeArray[1]
     }
-
-}
-
-
-
-function removeTrain() {
-    $(this).parent().parent().remove();
-}
-
-function updateTrain() {
-    var tdArray = $(this).parent().parent().find('td').not('.buttons');
-    for (let i = 0; i < tdArray.length; i++) {
-        var currentValue = $(tdArray).eq(i).text();
-        $(tdArray).eq(i).html('<input type=text>').find('input').val(currentValue);
-        $('.update').text('Save').addClass('save').remove('update');
-        //    console.log(currentValue);
+    return {
+        hour: timeArray[0],
+        minute: timeArray[1]
     }
 }
 
 function sync(object) {
-    let timeNow=moment();
-    /**
-     var trains=object.keys(object);
-     for(let i =0; trains.length; i++){
-     while(flag){
-     let someTime=object[trains[i]].firstTrainTime;
-     if(moment(someTime).diff(timeNow,'seconds') <0){
-       let freq=parseInt(object[key].frequency);
-       object[key].firstTrainTime=moment(someTime).add(freq,'minutes').format();
-     } else{
-       flag=false;
-     }
-     db.ref('trains/${key[i]}').update(someTime:someTime)
+    let timeNow = moment();
+    var trains = Object.keys(object);
+    for (let i = 0; i < trains.length; i++) {
+        let someTime = object[trains[i]].firstTrainTime;
+        console.log(someTime);
+        while (moment(someTime).diff(timeNow, "seconds") < 0) {
+            let frequency = parseInt(object[trains[i]].frequency)
+            console.log(frequency);
+            someTime = moment(someTime).add(frequency, 'minutes').format();
+        }
+        object[trains[i]].firstTrainTime = someTime;
+        object[trains[i]].minutesAway = moment(someTime).diff(timeNow, "minutes");
+        dataBase.ref(`trains/${trains[i]}`).set(object[trains[i]])
     }
-  }
-    **/
-  }
+    getKeys(object);
+}
 trainChanges();
 
 
